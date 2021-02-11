@@ -4,15 +4,17 @@ const expect = chai.expect;
 const app = require("../app");
 const dbConn = require("../helpers/dbConnection");
 
+
 chai.use(chaiHttp);
 
 
 describe("Rooms", function () {
-  beforeEach((done) => {
+  beforeEach((done) => {  
     done();
   });
 
   afterEach((done) => {
+    // clear the collection after each test case
     let db = dbConn.getDb();
     db.collection("Rooms").deleteMany();
     done();
@@ -47,7 +49,7 @@ describe("Rooms", function () {
     });
   });
 
-  describe("/DELETE room - no roomCode", () => {
+  describe("/DELETE room - no roomCode in request body", () => {
     it("should throw a 'no roomCode' error", function(done) {
       chai.request(app)
         .delete("/room")
