@@ -32,8 +32,6 @@ router.delete('/', async function(req, res, next) {
   }
   
   let db = dbConn.getDb();
-  console.log(roomCode)
-  console.log(typeof(roomCode))
   let deleteRoomRes = await db.collection("Rooms").deleteOne({
     "_id": { $eq: mongodb.ObjectID(roomCode) }
   });
