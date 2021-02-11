@@ -20,7 +20,7 @@ describe("Rooms", function () {
     done();
   });
 
-  describe("/POST room - success", () => {
+  describe("/POST room - valid request", () => {
     it('should create a room properly', function(done) {
       chai.request(app)
         .post("/room")
@@ -32,7 +32,7 @@ describe("Rooms", function () {
     });
   });
 
-  describe("/DELETE room - success", () => {
+  describe("/DELETE room - valid request", () => {
     it("should delete the specified room", function(done) {
       chai.request(app)
         .post("/room")
