@@ -1,15 +1,70 @@
-let dbConn = require("../helpers/dbConnection");
-let mongodb = require("mongodb");
+const dbConn = require("../helpers/dbConnection");
+const mongodb = require("mongodb");
+const cookieHelper = require("../helpers/cookie");
 
 var express = require('express');
 const { route } = require(".");
 var router = express.Router();
 
 
+function validRoomCode(roomCode)
+{
+  if((roomCode.length != 12) && (roomCode.length != 24))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+
+/*
+  GET /room to get the user's room, if they are part of one.
+  Returns:
+  - room object or empty (json)
+*/
+router.get('/', async function(req, res, next) {
+  let cookie = req.cookies["pickrCookie"];
+  if(!cookie)
+  {
+    res.json({});
+  }
+
+  let decoded = cookieHelper.cookieDecode(cookie, cookieHelper.secretKey);
+  let db = dbConn.getDb();
+  let roomObj = await db.collection("Rooms").findOne({
+    "_id": {$eq: mongodb.ObjectID(decoded.roomCode)}
+  });
+
+  if(!roomObj)
+  {
+    res.json({});
+  }
+
+  roomObj["members"] = roomObj["members"].map(x => 
+    cookieHelper.cookieDecode(x, cookieHelper.secretKey).user
+  );
+  
+  roomObj["owner"] = cookieHelper.cookieDecode(roomObj["owner"], cookieHelper.secretKey).user;
+  res.json(roomObj);
+});
+
+
 /* 
-  POST /room to create a new room, returns the roomID/roomCode 
+  POST /room to create a new room.
+  Request body required arguments:
+  - user (string) 
+  Returns:
+  - roomCode (string)
 */
 router.post('/', async function(req, res, next) {
+  let user = req.body.user;
+  if(!user)
+  {
+    res.status(400).send("400 Bad Request: please include user in request body.");
+    return;
+  }
+
   let db = dbConn.getDb();
   let createRoomRes = await db.collection("Rooms").insertOne({
     "options": [],
@@ -19,11 +74,25 @@ router.post('/', async function(req, res, next) {
   if(createRoomRes["result"]["ok"] != 1)
   {
     res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
   }
 
-  let roomId = createRoomRes["insertedId"];
+  let roomCode = createRoomRes["insertedId"];
+  let cookie = cookieHelper.generateCookie(user, roomCode);
+  let addOwnerRes = await db.collection("Rooms").updateOne({
+    "_id": {$eq: mongodb.ObjectID(roomCode)}
+  }, {
+    $set: {"owner": cookie}
+  });
+
+  if(addOwnerRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+  res.cookie("pickrCookie", cookie, {});
   res.json({
-    "roomCode": roomId
+    "roomCode": roomCode
   });
 });
 
@@ -35,7 +104,7 @@ router.post('/', async function(req, res, next) {
 */
 router.delete('/', async function(req, res, next) {
   let roomCode = req.body.roomCode;
-  if(!roomCode) 
+  if(!roomCode || !validRoomCode(roomCode)) 
   {
     res.status(400).send("400 Bad Request: please include roomCode in request body.");
   }
@@ -69,23 +138,23 @@ router.post('/join', async function(req, res, next) {
   }
   
   let roomCode = req.body.roomCode;
-  if(!roomCode)
+  if(!roomCode || !validRoomCode(roomCode))
   {
-    res.status(400).send("400 Bad Request: please include roomCode in request body.");
+    res.status(400).send("400 Bad Request: please enter a valid roomCode in request body.");
     return;
   }
 
+  let cookie = cookieHelper.generateCookie(user, roomCode);
+
   let db = dbConn.getDb();
+
   let joinRoomRes = await db.collection("Rooms").updateOne({
     "_id": { $eq: mongodb.ObjectID(roomCode) }
   }, {
-    $push: {
-      "members": "test"
+    $addToSet: {
+      "members": cookie
     }
   });
-
-  console.log(user)
-  console.log(roomCode)
 
   if(joinRoomRes["result"]["ok"] != 1)
   {
@@ -93,7 +162,8 @@ router.post('/join', async function(req, res, next) {
     return;
   }
 
-  res.send(`${user}`);
+  res.cookie("pickrCookie", cookie, {});
+  res.status(200).send("200 OK: successfully joined room.");
 });
 
 module.exports = router;
