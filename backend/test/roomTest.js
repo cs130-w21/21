@@ -124,8 +124,7 @@ describe("Rooms", function () {
       let cookie = cookieHelper.generateCookie(member, roomCode);
       let getRoomRes = await chai.request(app)
         .get("/room")
-        .set("Cookie", `pickrCookie=${cookie}`)
-        .send({ user: member });
+        .set("Cookie", `pickrCookie=${cookie}`);
 
       // room should have the member in it
       expect(getRoomRes.body).to.deep.equal({
