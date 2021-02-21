@@ -4,7 +4,6 @@ import {BrowserRouter as Router, Link, Route, useHistory} from "react-router-dom
 import CreateRoom from './CreateRoom.js'
 import JoinRoom from './JoinRoom.js'
 
-
 function CreateButton() {
   let history = useHistory();
 
@@ -13,9 +12,11 @@ function CreateButton() {
   }
 
   return (
-    <button type="button" onClick={handleClick}>
-      Create Room
-    </button>
+    <div style={{paddingTop: 20, paddingBottom:20 }}>
+      <button className="MenuButton" type="button" onClick={handleClick}>
+        Create Room
+      </button>
+    </div>
   )
 }
 
@@ -27,17 +28,25 @@ function JoinButton() {
   }
 
   return (
-    <button type="button" color="primary" onClick={handleClick}>
-      Join Room
-    </button>
+    <div style={{paddingTop: 20, paddingBottom:20 }}>
+      <button className="MenuButton" type="button" color="primary" onClick={handleClick}>
+        Join Room
+      </button>
+    </div>
   )
 }
 
-
+const t = {
+  paddingTop: 20,
+  paddiingRight: 20,
+  paddingLeft: 20,
+  paddingBottom: 20
+}
+//{{height: '50%', width: '300px', margin: 'auto'}}>
 function Home() {
   return (
-    <div>
-      <h2>PICKR</h2>
+    <div className='PageFormat' style={t}> 
+      <h1>PICKR</h1>
       <div>
         <CreateButton/>
       </div>
@@ -47,7 +56,6 @@ function Home() {
     </div>
   );
 }
-
 
 function App() {
   return (
@@ -60,5 +68,6 @@ function App() {
     </Router>
   )
 }
+
 
 export default App;
