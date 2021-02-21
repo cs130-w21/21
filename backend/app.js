@@ -46,4 +46,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+// update cors
+app.use(cors());
+
 module.exports = app;
