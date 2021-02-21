@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "10"
+services:
+  - mongodb
+script:
+  - echo 'Testing Backend...'
+  - cd backend
+  - echo 'Installing Dependencies...'
+  - npm install
+  - echo 'Running Test Cases...'
+  - npm test
