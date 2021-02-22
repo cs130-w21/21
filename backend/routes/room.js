@@ -1,21 +1,11 @@
 const dbConn = require("../helpers/dbConnection");
 const mongodb = require("mongodb");
 const cookieHelper = require("../helpers/cookie");
+const helper = require("../helpers/helper");
 
 var express = require('express');
 const { route } = require(".");
 var router = express.Router();
-
-
-function validRoomCode(roomCode)
-{
-  if((roomCode.length != 12) && (roomCode.length != 24))
-  {
-    return false;
-  }
-
-  return true;
-}
 
 
 /*
@@ -104,7 +94,7 @@ router.post('/', async function(req, res, next) {
 */
 router.delete('/', async function(req, res, next) {
   let roomCode = req.body.roomCode;
-  if(!roomCode || !validRoomCode(roomCode)) 
+  if(!roomCode || !helper.validRoomCode(roomCode)) 
   {
     res.status(400).send("400 Bad Request: please include roomCode in request body.");
   }
@@ -138,7 +128,7 @@ router.post('/join', async function(req, res, next) {
   }
   
   let roomCode = req.body.roomCode;
-  if(!roomCode || !validRoomCode(roomCode))
+  if(!roomCode || !helper.validRoomCode(roomCode))
   {
     res.status(400).send("400 Bad Request: please enter a valid roomCode in request body.");
     return;
