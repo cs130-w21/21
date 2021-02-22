@@ -112,3 +112,21 @@ input {
 ::placeholder { /* Recent browsers */
   text-transform: none;
 }
+
+.DropdownMenu {
+  height: 40px;
+  border-color: #fb6161;
+  border-radius: 8px;
+  font-size:25px;
+  font-family: sans-serif;
+  text-align: center;
+  background-color: #fb6161;
+  text-decoration: rgb(255, 255, 255);
+  color: white;
+  width: auto;
+  
+}
+select:focus{
+  outline: none;
+  border-color: red;
+}
