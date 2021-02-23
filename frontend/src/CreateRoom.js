@@ -1,11 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {BrowserRouter as Router, Link, Route, useHistory} from "react-router-dom";
 
 function CreateRoomButton() {
-  
+    let history = useHistory();
+ 
     function handleClick() {
-        if (optionClicked != 0)
+        if (optionClicked !== 0) {
             console.log(optionClicked) //This is where we would want to POST request
+            history.push("/room") 
+        }
 
     }
   

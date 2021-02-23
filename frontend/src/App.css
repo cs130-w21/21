@@ -130,3 +130,29 @@ select:focus{
   outline: none;
   border-color: red;
 }
+
+.InputOptionsField {
+   height: 30px;
+   width: 80%;
+   border-color: #fb6161;
+   border-radius: 8px;
+   text-transform: none;
+ }
+
+ .CurrentNominations {
+   font-size: 25px;
+   align-content: center;
+ }
+ .ScrollBox {
+   font-size: 15px;
+   overflow: auto;
+   overflow-y: scroll;
+   text-align: center;
+   width: 80%;
+   height: 100px;
+   border: solid 2px;
+ }
+ .Center {
+  padding-left: 30%;
+  padding-right: 20%;
+ }

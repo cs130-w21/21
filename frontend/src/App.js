@@ -3,6 +3,7 @@ import './App.css';
 import {BrowserRouter as Router, Link, Route, useHistory} from "react-router-dom";
 import CreateRoom from './CreateRoom.js'
 import JoinRoom from './JoinRoom.js'
+import SessionRoom from './SessionRoom';
 
 function CreateButton() {
   let history = useHistory();
@@ -64,6 +65,7 @@ function App() {
         <Route exact path="/" component={Home}/>
         <Route exact path="/create" component={CreateRoom}/>
         <Route exact path="/join" component={JoinRoom}/>
+        <Route exact path="/room" component={SessionRoom}/>
       </div>
     </Router>
   )
