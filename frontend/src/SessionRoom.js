@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 
 
 let customRoom = true
+let roomCode = "12345"
+//TODO have server generate a room code instead
 
 class SessionRoom extends React.Component {
     handleToUpdate() { //This is called by child nomination component
@@ -16,11 +18,18 @@ class SessionRoom extends React.Component {
             ui = (
             <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />)
         } else {
-            ui = (<div>placeholder</div>)//retrieve cards from backend or store locally
+            ui = (<div>
+                    Placeholder until we get the cards set up
+                </div>)//retrieve cards from backend or store locally
         }
         return (
             <div className='PageFormat'>
-                {ui}
+                <div>
+                    {ui}
+                </div>
+                <h2 className="RoomCode">
+                    Room Code: {roomCode}
+                </h2>
             </div>
         );
     }
