@@ -76,7 +76,7 @@ router.delete("/", async function(req, res, next) {
   let deleteOptionRes = await db.collection("Rooms").updateOne({
     "_id": { $eq: mongodb.ObjectID(roomCode) }
   }, {
-    $pull: { "options": option }
+    $pull: { "options": { "name" : option } }
   });
 
   if(deleteOptionRes["result"]["ok"] != 1)
@@ -121,7 +121,6 @@ router.post("/results", async function(req, res, next) {
       });
     }
     else {
-      console.log("false");
       var optionAddRes = await db.collection("Rooms").updateOne({
         "options.name": name
       }, {
