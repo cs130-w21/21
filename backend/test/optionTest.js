@@ -42,7 +42,7 @@ describe("Options", function() {
       expect(getRoomRes.body).to.deep.equal({
         "_id": roomCode,
         "options": [
-          "option1"
+          {"name" : "option1", "yes": 0, "no": 0}
         ],
         "members": [],
         "owner": "someUser"
