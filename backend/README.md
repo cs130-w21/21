@@ -7,12 +7,26 @@ server whenever it detects changes.
 
 
 ## Endpoints
+### /room
+
 HTTP Method | Endpoint | Required Arguments (in request body) | Description
 --- | --- | --- | --- 
 GET | /room | N/A | get a particular user's room if it exists. If not, returns empty JSON
 POST | /room | user (string) | create a room and return the roomCode of the newly created room
 DELETE | /room | roomCode (string) | delete the specified room 
 POST | /room/join | roomCode (string), user (string) | join the specified room
+
+### /option
+
+HTTP Method | Endpoint | Required Arguments (in request body) | Description
+--- | --- | --- | --- 
+POST | /option | roomCode (string), option (string) | insert an option for a particular room
+DELETE | /option | roomCode (string), option (string) | delete the specified option for a particular room
+POST | /option/results | roomCode (string), results (json) | pass results from card swiping to backend, updating room + option info
+
+Results json should have the following format based on swipe result ("True" for yes swipe, "False" for no swipe):
+    
+    { "option_1" : "True", "option_2": "False" }
 
 
 ## User Persistence without Sign-up, using Cookies
