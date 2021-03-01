@@ -3,19 +3,41 @@ import ReactDOM from 'react-dom';
 import TinderCard from 'react-tinder-card';
 import Card from './Card';
 
-const outOfFrame = (name) => {
-  console.log(name + ' left the screen!')
-}
-
 let customRoom = true
 let roomCode = "12345"
+let cards = []
+let cardResults = []
+let currentIndex = 0;
 //TODO have server generate a room code instead
 
 class SessionRoom extends React.Component {
     handleToUpdate() { //This is called by child nomination component
-        console.log("worked")
         customRoom = false
+        //GET request here to get list of all cards
+        for(let i=0; i < cards.length; i++){
+            cardResults.push({name: cards[i], result: false})
+        }
         this.forceUpdate();
+    }
+    swipeRight(){
+        console.log("swiped right")
+        cardResults[currentIndex].result = true
+        currentIndex++
+        if(currentIndex >= cardResults.length){
+            this.doneVoting()
+        }
+    }
+    swipeLeft(){
+        console.log("swiped left")
+        cardResults[currentIndex].result = false
+        currentIndex++
+        if(currentIndex >= cardResults.length){
+            this.doneVoting()
+        }
+    }
+    doneVoting(){
+        console.log("done voting" + cardResults)
+        //adding code here to retrieve results and display winner
     }
     render () {
         let ui = ''
@@ -23,7 +45,9 @@ class SessionRoom extends React.Component {
             ui = (
             <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />)
         } else {
-            ui = (<div><Card/></div>)//retrieve cards from backend or store locally
+            ui = (<div>
+                <Card cardsList={cards} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
+            </div>)//retrieve cards from backend or store locally
         }
         return (
             <div className='PageFormat'>
@@ -51,7 +75,6 @@ class Nomination extends React.Component {
         if (this.newText.value === "")
             return
         this.state.options.push(this.newText.value)
-        console.log(this.state.options)
         this.newText.value = ""
         this.forceUpdate()
     }
@@ -59,7 +82,8 @@ class Nomination extends React.Component {
         this.setState((state) => {
             return {options: this.state.options, ready: true}
           });
-        console.log("happened " + this.state.ready)
+        cards = this.state.options
+        console.log('list of cards:' + cards)
         setTimeout(this.props.handleToUpdate, 5000) //simulate a 5 second wait
         //this.props.handleToUpdate();
     }

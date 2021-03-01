@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import TinderCard from 'react-tinder-card'
 import './Card.css';
 
-const db = [
+let db = [
   {
     name: 'De Neve',
     url: ''
@@ -17,14 +17,21 @@ const db = [
     url: ''
   }
 ]
-
-function Card () {
+//props = { cardsList: List, right:function, left:function}
+function Card (props) {
   const characters = db
   const [lastDirection, setLastDirection] = useState()
+  if(props.cardsList.length > 0) db = []
+
+  for(let i = 0; i< props.cardsList.length; i++){
+    db.push({name:props.cardsList[i], url: ''})
+  }
 
   const swiped = (direction, nameToDelete) => {
     console.log('removing: ' + nameToDelete)
     setLastDirection(direction)
+    if(direction === "right") props.right()
+    else props.left()
   }
 
   const outOfFrame = (name) => {
