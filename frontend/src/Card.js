@@ -35,7 +35,7 @@ function Card () {
     <div>
       <link href='https://fonts.googleapis.com/css?family=Damion&display=swap' rel='stylesheet' />
       <link href='https://fonts.googleapis.com/css?family=Alatsi&display=swap' rel='stylesheet' />
-      <h1>Where should we eat?</h1>
+      <h3>Where should we eat?</h3>
       <div className='cardContainer'>
         {characters.map((character) =>
           <TinderCard className='swipe' key={character.name} preventSwipe={["up", "down"]} onSwipe={(dir) => swiped(dir, character.name)} onCardLeftScreen={() => outOfFrame(character.name)}>
@@ -45,7 +45,7 @@ function Card () {
           </TinderCard>
         )}
       </div>
-      {lastDirection ? <h2 className='infoText'>You swiped {lastDirection}</h2> : <h2 className='infoText' />}
+      {lastDirection ? <h6 className='infoText'>You swiped {lastDirection}</h6> : <h6 className='infoText' />}
     </div>
   )
 }
