@@ -33,7 +33,11 @@ router.post("/", async function(req, res, next) {
     "_id": mongodb.ObjectID(roomCode)
   }, {
     $addToSet: {
-      "options": option
+      "options": { 
+        "name": option,
+        "yes": 0,
+        "no": 0
+      }
     }
   });
 
@@ -72,7 +76,7 @@ router.delete("/", async function(req, res, next) {
   let deleteOptionRes = await db.collection("Rooms").updateOne({
     "_id": { $eq: mongodb.ObjectID(roomCode) }
   }, {
-    $pull: { "options": option }
+    $pull: { "options": { "name" : option } }
   });
 
   if(deleteOptionRes["result"]["ok"] != 1)
@@ -82,6 +86,58 @@ router.delete("/", async function(req, res, next) {
   }
 
   res.status(200).send("200 OK: successfully deleted option.")
+});
+
+
+/*
+  POST /option/results to post results from card swiping to backend.
+  Required request body arguments:
+  - roomCode (string)
+  - results (json)
+*/
+router.post("/results", async function(req, res, next) {
+  let roomCode = req.body.roomCode;
+  if(!roomCode || !helper.validRoomCode(roomCode))
+  {
+    res.status(400).send("400 Bad Request: please include roomCode in request body.");
+    return;
+  }
+
+  let results = req.body.results;
+  if(!results)
+  {
+    res.status(400).send("400 Bad Request: please include results in request body.");
+    return;
+  }
+  let db = dbConn.getDb();
+  for (let [name, result] of Object.entries(results)) {
+    if (result == "True") {
+      var optionAddRes = await db.collection("Rooms").updateOne({
+        "options.name": name
+      }, {
+        $inc: {
+          "options.$.yes": 1
+        }
+      });
+    }
+    else {
+      var optionAddRes = await db.collection("Rooms").updateOne({
+        "options.name": name
+      }, {
+        $inc: {
+          "options.$.no": 1
+        }
+      });
+    }
+    
+    if(optionAddRes["result"]["ok"] != 1)
+    {
+      res.status(500).send("500 Internal Server Error: results post failed for result: " + result[0]);
+      return;
+    }
+  };
+
+  res.status(200).send("200 OK: successfully processed results.");
 });
 
 module.exports = router;
