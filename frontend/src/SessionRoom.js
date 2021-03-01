@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import TinderCard from 'react-tinder-card';
+import Card from './Card';
 
+const outOfFrame = (name) => {
+  console.log(name + ' left the screen!')
+}
 
 let customRoom = true
 let roomCode = "12345"
@@ -18,9 +23,7 @@ class SessionRoom extends React.Component {
             ui = (
             <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />)
         } else {
-            ui = (<div>
-                    Placeholder until we get the cards set up
-                </div>)//retrieve cards from backend or store locally
+            ui = (<div><Card/></div>)//retrieve cards from backend or store locally
         }
         return (
             <div className='PageFormat'>
