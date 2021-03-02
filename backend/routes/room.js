@@ -156,4 +156,110 @@ router.post('/join', async function(req, res, next) {
   res.status(200).send("200 OK: successfully joined room.");
 });
 
+/* 
+  POST /room/study to create a new room with preset study options.
+  Request body required arguments:
+  - user (string) 
+  Returns:
+  - roomCode (string)
+*/
+router.post('/study', async function(req, res, next) {
+  let user = req.body.user;
+  if(!user)
+  {
+    res.status(400).send("400 Bad Request: please include user in request body.");
+    return;
+  }
+
+  let db = dbConn.getDb();
+  let createRoomRes = await db.collection("Rooms").insertOne({
+    "options": [ 
+      { "name": "Powell Library", "yes": 0, "no": 0 },
+      { "name": "YRL Library", "yes": 0, "no": 0 },
+      { "name": "Engineering Library", "yes": 0, "no": 0 },
+      { "name": "Sculpture Garden", "yes": 0, "no": 0 },
+      { "name": "Kerckhoff Patio", "yes": 0, "no": 0 }
+    ],
+    "members": []
+  });
+
+  if(createRoomRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+
+  let roomCode = createRoomRes["insertedId"];
+  let cookie = cookieHelper.generateCookie(user, roomCode);
+  let addOwnerRes = await db.collection("Rooms").updateOne({
+    "_id": {$eq: mongodb.ObjectID(roomCode)}
+  }, {
+    $set: {"owner": cookie}
+  });
+
+  if(addOwnerRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+  res.cookie("pickrCookie", cookie, {});
+  res.json({
+    "roomCode": roomCode
+  });
+});
+
+/* 
+  POST /room/food to create a new room with preset food options.
+  Request body required arguments:
+  - user (string) 
+  Returns:
+  - roomCode (string)
+*/
+router.post('/food', async function(req, res, next) {
+  let user = req.body.user;
+  if(!user)
+  {
+    res.status(400).send("400 Bad Request: please include user in request body.");
+    return;
+  }
+
+  let db = dbConn.getDb();
+  let createRoomRes = await db.collection("Rooms").insertOne({
+    "options": [
+      { "name": "Bruin Plate", "yes": 0, "no": 0 },
+      { "name": "Covel", "yes": 0, "no": 0 },
+      { "name": "De Neve", "yes": 0, "no": 0 },
+      { "name": "Feast", "yes": 0, "no": 0 },
+      { "name": "Bruin Cafe", "yes": 0, "no": 0 },
+      { "name": "Cafe 1919", "yes": 0, "no": 0 },
+      { "name": "Rendezvous", "yes": 0, "no": 0 }
+    ],
+    "members": []
+  });
+
+  if(createRoomRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+
+  let roomCode = createRoomRes["insertedId"];
+  let cookie = cookieHelper.generateCookie(user, roomCode);
+  let addOwnerRes = await db.collection("Rooms").updateOne({
+    "_id": {$eq: mongodb.ObjectID(roomCode)}
+  }, {
+    $set: {"owner": cookie}
+  });
+
+  if(addOwnerRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+  res.cookie("pickrCookie", cookie, {});
+  res.json({
+    "roomCode": roomCode
+  });
+});
+
 module.exports = router;
