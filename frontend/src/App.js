@@ -1,14 +1,32 @@
-import logo from './logo.svg';
 import './App.css';
+import React, {useState, useEffect} from 'react';
 import {BrowserRouter as Router, Link, Route, useHistory} from "react-router-dom";
 import CreateRoom from './CreateRoom.js'
 import JoinRoom from './JoinRoom.js'
+import axios from "axios";
+
 
 function CreateButton() {
   let history = useHistory();
+  const [roomCode, setRoomCode] = useState([]);
 
+  /*
   function handleClick() {
     history.push("/create");
+  } */
+
+  const handleClick = async() => {
+    try {
+      console.log("Attempting to make post request");
+      axios.post('http://localhost:3000/room', {user: "Owner"}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+          console.log(res);
+          console.log("Successfully finished post request")
+          history.push("/create", res.data);
+      });
+    } catch (err) {
+        console.log(err);
+        console.log("Failed to create room");
+    }
   }
 
   return (
