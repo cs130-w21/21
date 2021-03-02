@@ -5,29 +5,15 @@ import CreateRoom from './CreateRoom.js'
 import JoinRoom from './JoinRoom.js'
 import axios from "axios";
 
+import SessionRoom from './SessionRoom';
 
 function CreateButton() {
   let history = useHistory();
   const [roomCode, setRoomCode] = useState([]);
 
-  /*
   function handleClick() {
     history.push("/create");
-  } */
-
-  const handleClick = async() => {
-    try {
-      console.log("Attempting to make post request");
-      axios.post('http://localhost:3000/room', {user: "Owner"}, {headers: {'Content-Type': 'application/json'}}).then(res => {
-          console.log(res);
-          console.log("Successfully finished post request")
-          history.push("/create", res.data);
-      });
-    } catch (err) {
-        console.log(err);
-        console.log("Failed to create room");
-    }
-  }
+  } 
 
   return (
     <div style={{paddingTop: 20, paddingBottom:20 }}>
@@ -82,6 +68,7 @@ function App() {
         <Route exact path="/" component={Home}/>
         <Route exact path="/create" component={CreateRoom}/>
         <Route exact path="/join" component={JoinRoom}/>
+        <Route exact path="/room" component={SessionRoom}/>
       </div>
     </Router>
   )
