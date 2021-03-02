@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import ReactDOM from 'react-dom';
-import {BrowserRouter as Router, Link, Route, useHistory} from "react-router-dom";
+import {useHistory} from "react-router-dom";
 import axios from 'axios';
 
 
