@@ -4,16 +4,20 @@ import ReactDOM from 'react-dom';
 
 let customRoom = true
 let roomCode = "12345"
-//TODO have server generate a room code instead
 
 class SessionRoom extends React.Component {
+
     handleToUpdate() { //This is called by child nomination component
         console.log("worked")
         customRoom = false
         this.forceUpdate();
     }
     render () {
-        let ui = ''
+        let ui = '';
+        let roomData = this.props.location.state; 
+        roomCode = roomData.roomCode;
+        console.log(roomData);
+
         if (customRoom) {
             ui = (
             <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />)
