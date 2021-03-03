@@ -153,7 +153,10 @@ router.post('/join', async function(req, res, next) {
   }
 
   res.cookie("pickrCookie", cookie, {});
-  res.status(200).send("200 OK: successfully joined room.");
+  res.json({
+    "roomCode": roomCode
+  });
+  //res.status(200).send("200 OK: successfully joined room.");
 });
 
 module.exports = router;
