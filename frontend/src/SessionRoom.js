@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import TinderCard from 'react-tinder-card';
 import Card from './Card';
 
-let customRoom = true
+let state = 0; //0 = nomination, 1 = swipe, 2 = winner
 let roomCode = "12345"
 let cards = []
 let cardResults = []
-let currentIndex = 0;
+let currentIndex = 0
+let roomHeader = "Do you like this option?"
+let result = ""
 //TODO have server generate a room code instead
 
 class SessionRoom extends React.Component {
     handleToUpdate() { //This is called by child nomination component
-        customRoom = false
+        state = 1
         //GET request here to get list of all cards
         for(let i=0; i < cards.length; i++){
             cardResults.push({name: cards[i], result: false})
@@ -21,7 +23,7 @@ class SessionRoom extends React.Component {
     }
     swipeRight(){
         console.log("swiped right")
-        cardResults[currentIndex].result = true
+        cardResults[currentIndex].result = "True"
         currentIndex++
         if(currentIndex >= cardResults.length){
             this.doneVoting()
@@ -29,7 +31,7 @@ class SessionRoom extends React.Component {
     }
     swipeLeft(){
         console.log("swiped left")
-        cardResults[currentIndex].result = false
+        cardResults[currentIndex].result = "False"
         currentIndex++
         if(currentIndex >= cardResults.length){
             this.doneVoting()
@@ -37,26 +39,39 @@ class SessionRoom extends React.Component {
     }
     doneVoting(){
         console.log("done voting" + cardResults)
+        state = 2
         //adding code here to retrieve results and display winner
+
+        result = "Placeholder"
+        this.forceUpdate()
     }
     render () {
         let ui = ''
-        if (customRoom) {
-            ui = (
-            <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />)
+        if (state === 0) {
+            ui = (<div>
+            <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />
+            <h2 className="RoomCode">
+                Room Code: {roomCode}
+            </h2>
+        </div>)
+        } else if (state === 1){
+            ui = (<div>
+                <Card cardsList={cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
+                <h2 className="RoomCode">
+                    Room Code: {roomCode}
+                </h2>
+            </div>)//retrieve cards from backend or store locally
         } else {
             ui = (<div>
-                <Card cardsList={cards} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
-            </div>)//retrieve cards from backend or store locally
+                <h2>Winner:</h2>
+                <h3>{result}</h3>
+            </div>)
         }
         return (
             <div className='PageFormat'>
                 <div>
                     {ui}
                 </div>
-                <h2 className="RoomCode">
-                    Room Code: {roomCode}
-                </h2>
             </div>
         );
     }
@@ -117,7 +132,7 @@ class Nomination extends React.Component {
                             Add option:
                         </label>
                         <br></br>
-                        <input className="InputOptionsField" type="text" ref={(ip) => {this.newText = ip}}/>
+                        <input className="InputOptionsField" type="text" maxLength="15" ref={(ip) => {this.newText = ip}}/>
                         <br></br>
             
                         <button className="SubmitButton" type="button" onClick={this.handleOptionSubmitted}>

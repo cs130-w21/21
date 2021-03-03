@@ -1,20 +1,5 @@
 import React from 'react';
 import './App.css';
-import ReactDOM from 'react-dom';
-
-function SubmitButton() {
-
-    function handleClick() {
-        console.log("code: ");
-      }
-    return (
-      <div style={{paddingTop: 20, paddingBottom:20 }}>
-        <button className="MenuButton" type="button" >
-          Join
-        </button>
-      </div>
-    )
-  }
 
 let handleSubmit = (event) => {
     event.preventDefault()
