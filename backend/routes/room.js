@@ -9,26 +9,33 @@ var router = express.Router();
 
 
 /*
-  GET /room to get the user's room, if they are part of one.
+  GET /room to get the user's room, if they supply the roomCode or 
+  are already part of one.
   Returns:
   - room object or empty (json)
 */
 router.get('/', async function(req, res, next) {
   let cookie = req.cookies["pickrCookie"];
-  if(!cookie)
+  let roomCode = req.query.roomCode;
+
+  if(!cookie && !roomCode)
   {
     res.json({});
+    return;
   }
+  
+  if(cookie)
+    roomCode = cookieHelper.cookieDecode(cookie, cookieHelper.secretKey).roomCode;
 
-  let decoded = cookieHelper.cookieDecode(cookie, cookieHelper.secretKey);
   let db = dbConn.getDb();
   let roomObj = await db.collection("Rooms").findOne({
-    "_id": {$eq: mongodb.ObjectID(decoded.roomCode)}
+    "_id": {$eq: mongodb.ObjectID(roomCode) }
   });
 
   if(!roomObj)
   {
     res.json({});
+    return;
   }
 
   roomObj["members"] = roomObj["members"].map(x => 
