@@ -79,7 +79,12 @@ router.post('/', async function(req, res, next) {
   let addOwnerRes = await db.collection("Rooms").updateOne({
     "_id": {$eq: mongodb.ObjectID(roomCode)}
   }, {
-    $set: {"owner": cookie}
+    $set: {
+      "owner": {
+        "id": cookie,
+        "doneVoting": false
+      }
+    }
   });
 
   if(addOwnerRes["result"]["ok"] != 1)
@@ -149,7 +154,10 @@ router.post('/join', async function(req, res, next) {
     "_id": { $eq: mongodb.ObjectID(roomCode) }
   }, {
     $addToSet: {
-      "members": cookie
+      "members": {
+        "id": cookie,
+        "doneVoting": false
+      }
     }
   });
 

@@ -51,7 +51,14 @@ class SessionRoom extends React.Component {
         console.log(dict)
         try {
             console.log("Attempting to send swipe results");
-            axios.post('http://localhost:3000/option/results', {roomCode: roomCode, results: dict}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+            axios.post(
+                'http://localhost:3000/option/results', 
+                {roomCode: roomCode, results: dict}, 
+                {
+                    headers: {'Content-Type': 'application/json'},
+                    withCredentials: true
+                }
+            ).then(res => {
                 console.log(res);
                 console.log("Successfully finished result post request")
             });
