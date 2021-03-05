@@ -11,7 +11,7 @@ var optionRouter = require('./routes/option');
 
 var app = express();
 
-app.use(cors());
+app.use(cors({credentials: true, origin: 'http://localhost:8000'}));
 
 // db setup
 var dbConn = require('./helpers/dbConnection');
