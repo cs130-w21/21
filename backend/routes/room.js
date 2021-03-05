@@ -9,26 +9,33 @@ var router = express.Router();
 
 
 /*
-  GET /room to get the user's room, if they are part of one.
+  GET /room to get the user's room, if they supply the roomCode or 
+  are already part of one.
   Returns:
   - room object or empty (json)
 */
 router.get('/', async function(req, res, next) {
   let cookie = req.cookies["pickrCookie"];
-  if(!cookie)
+  let roomCode = req.query.roomCode;
+
+  if(!cookie && !roomCode)
   {
     res.json({});
+    return;
   }
+  
+  if(cookie)
+    roomCode = cookieHelper.cookieDecode(cookie, cookieHelper.secretKey).roomCode;
 
-  let decoded = cookieHelper.cookieDecode(cookie, cookieHelper.secretKey);
   let db = dbConn.getDb();
   let roomObj = await db.collection("Rooms").findOne({
-    "_id": {$eq: mongodb.ObjectID(decoded.roomCode)}
+    "_id": {$eq: mongodb.ObjectID(roomCode) }
   });
 
   if(!roomObj)
   {
     res.json({});
+    return;
   }
 
   roomObj["members"] = roomObj["members"].map(x => 
@@ -153,7 +160,116 @@ router.post('/join', async function(req, res, next) {
   }
 
   res.cookie("pickrCookie", cookie, {});
-  res.status(200).send("200 OK: successfully joined room.");
+  res.json({
+    "roomCode": roomCode
+  });
+  //res.status(200).send("200 OK: successfully joined room.");
+});
+
+/* 
+  POST /room/study to create a new room with preset study options.
+  Request body required arguments:
+  - user (string) 
+  Returns:
+  - roomCode (string)
+*/
+router.post('/study', async function(req, res, next) {
+  let user = req.body.user;
+  if(!user)
+  {
+    res.status(400).send("400 Bad Request: please include user in request body.");
+    return;
+  }
+
+  let db = dbConn.getDb();
+  let createRoomRes = await db.collection("Rooms").insertOne({
+    "options": [ 
+      { "name": "Powell Library", "yes": 0, "no": 0 },
+      { "name": "YRL Library", "yes": 0, "no": 0 },
+      { "name": "Engineering Library", "yes": 0, "no": 0 },
+      { "name": "Sculpture Garden", "yes": 0, "no": 0 },
+      { "name": "Kerckhoff Patio", "yes": 0, "no": 0 }
+    ],
+    "members": []
+  });
+
+  if(createRoomRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+
+  let roomCode = createRoomRes["insertedId"];
+  let cookie = cookieHelper.generateCookie(user, roomCode);
+  let addOwnerRes = await db.collection("Rooms").updateOne({
+    "_id": {$eq: mongodb.ObjectID(roomCode)}
+  }, {
+    $set: {"owner": cookie}
+  });
+
+  if(addOwnerRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+  res.cookie("pickrCookie", cookie, {});
+  res.json({
+    "roomCode": roomCode
+  });
+});
+
+/* 
+  POST /room/food to create a new room with preset food options.
+  Request body required arguments:
+  - user (string) 
+  Returns:
+  - roomCode (string)
+*/
+router.post('/food', async function(req, res, next) {
+  let user = req.body.user;
+  if(!user)
+  {
+    res.status(400).send("400 Bad Request: please include user in request body.");
+    return;
+  }
+
+  let db = dbConn.getDb();
+  let createRoomRes = await db.collection("Rooms").insertOne({
+    "options": [
+      { "name": "Bruin Plate", "yes": 0, "no": 0 },
+      { "name": "Covel", "yes": 0, "no": 0 },
+      { "name": "De Neve", "yes": 0, "no": 0 },
+      { "name": "Feast", "yes": 0, "no": 0 },
+      { "name": "Bruin Cafe", "yes": 0, "no": 0 },
+      { "name": "Cafe 1919", "yes": 0, "no": 0 },
+      { "name": "Rendezvous", "yes": 0, "no": 0 }
+    ],
+    "members": []
+  });
+
+  if(createRoomRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+
+  let roomCode = createRoomRes["insertedId"];
+  let cookie = cookieHelper.generateCookie(user, roomCode);
+  let addOwnerRes = await db.collection("Rooms").updateOne({
+    "_id": {$eq: mongodb.ObjectID(roomCode)}
+  }, {
+    $set: {"owner": cookie}
+  });
+
+  if(addOwnerRes["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: database insert failed.");
+    return;
+  }
+  res.cookie("pickrCookie", cookie, {});
+  res.json({
+    "roomCode": roomCode
+  });
 });
 
 module.exports = router;

@@ -42,7 +42,7 @@ describe("Options", function() {
       expect(getRoomRes.body).to.deep.equal({
         "_id": roomCode,
         "options": [
-          "option1"
+          {"name" : "option1", "yes": 0, "no": 0}
         ],
         "members": [],
         "owner": "someUser"
@@ -80,6 +80,51 @@ describe("Options", function() {
       expect(getRoomRes.body).to.deep.equal({
         "_id": roomCode,
         "options": [],
+        "members": [],
+        "owner": "someUser"
+      });
+    });
+  });
+
+  describe("POST /option/results - valid request", () => {
+    it("should increment the yes/no values of each option accordingly", async function() {
+      // create a room
+      let user = "someUser";
+      let createRoomRes = await chai.request(app)
+        .post("/room")
+        .send({ user: user });
+
+      // add an option to that room
+      let roomCode = createRoomRes.body.roomCode;
+      let addOptionRes1 = await chai.request(app)
+        .post("/option")
+        .send({ option: "option1", roomCode: roomCode });
+
+      expect(addOptionRes1.status).to.equal(200);
+
+      let addOptionRes2 = await chai.request(app)
+        .post("/option")
+        .send({ option: "option2", roomCode: roomCode });
+
+      expect(addOptionRes2.status).to.equal(200);
+
+      // edit results from options
+      let resultsOptionRes = await chai.request(app)
+        .post("/option/results")
+        .send({ roomCode: roomCode, results: { "option1": "True", "option2": "False" } });
+
+      // check to see if option is present
+      let cookie = cookieHelper.generateCookie(user, roomCode);
+      let getRoomRes = await chai.request(app)
+        .get("/room")
+        .set("Cookie", `pickrCookie=${cookie}`);
+
+      expect(getRoomRes.body).to.deep.equal({
+        "_id": roomCode,
+        "options": [
+          {"name" : "option1", "yes": 1, "no": 0},
+          {"name" : "option2", "yes": 0, "no": 1}
+        ],
         "members": [],
         "owner": "someUser"
       });

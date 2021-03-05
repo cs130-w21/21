@@ -13,6 +13,7 @@ let result = ""
 //TODO have server generate a room code instead
 
 class SessionRoom extends React.Component {
+
     handleToUpdate() { //This is called by child nomination component
         state = 1
         //GET request here to get list of all cards
@@ -47,6 +48,10 @@ class SessionRoom extends React.Component {
     }
     render () {
         let ui = ''
+        let roomData = this.props.location.state; 
+        roomCode = roomData.roomCode;
+        console.log(roomData);
+        
         if (state === 0) {
             ui = (<div>
             <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />

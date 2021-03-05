@@ -1,16 +1,19 @@
-import logo from './logo.svg';
 import './App.css';
+import React, {useState, useEffect} from 'react';
 import {BrowserRouter as Router, Link, Route, useHistory} from "react-router-dom";
 import CreateRoom from './CreateRoom.js'
 import JoinRoom from './JoinRoom.js'
+import axios from "axios";
+
 import SessionRoom from './SessionRoom';
 
 function CreateButton() {
   let history = useHistory();
+  const [roomCode, setRoomCode] = useState([]);
 
   function handleClick() {
     history.push("/create");
-  }
+  } 
 
   return (
     <div style={{paddingTop: 20, paddingBottom:20 }}>
