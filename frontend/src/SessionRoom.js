@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import TinderCard from 'react-tinder-card';
 import Card from './Card';
+import axios from "axios";
 
 let state = 0; //0 = nomination, 1 = swipe, 2 = winner
 let roomCode = "12345"
@@ -16,8 +17,9 @@ class SessionRoom extends React.Component {
 
     handleToUpdate() { //This is called by child nomination component
         state = 1
+        currentIndex = 0
         //GET request here to get list of all cards
-        for(let i=0; i < cards.length; i++){
+        for(let i=cards.length-1; i > -1; i--){
             cardResults.push({name: cards[i], result: false})
         }
         this.forceUpdate();
@@ -42,6 +44,22 @@ class SessionRoom extends React.Component {
         console.log("done voting" + cardResults)
         state = 2
         //adding code here to retrieve results and display winner
+        let dict = {}
+        for(let i = 0; i<cardResults.length; i++){
+            dict[cardResults[i].name] = cardResults[i].result
+        }
+        console.log(dict)
+        try {
+            console.log("Attempting to send swipe results");
+            axios.post('http://localhost:3000/option/results', {roomCode: roomCode, results: dict}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                console.log(res);
+                console.log("Successfully finished result post request")
+            });
+        } catch (err) {
+            console.log(err);
+            console.log("Failed to send results");
+        }
+
 
         result = "Placeholder"
         this.forceUpdate()
@@ -104,6 +122,19 @@ class Nomination extends React.Component {
           });
         cards = this.state.options
         console.log('list of cards:' + cards)
+        for (let i = 0; i < cards.length; i++){  
+            try {
+                console.log("Attempting to send option");
+                axios.post('http://localhost:3000/option', {roomCode: roomCode, option: cards[i]}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                    console.log(res);
+                    console.log("Successfully finished options post request")
+                });
+            } catch (err) {
+                console.log(err);
+                console.log("Failed to send option");
+            }
+        }
+
         setTimeout(this.props.handleToUpdate, 5000) //simulate a 5 second wait
         //this.props.handleToUpdate();
     }
