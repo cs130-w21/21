@@ -11,6 +11,7 @@ let cardResults = []
 let currentIndex = 0
 let roomHeader = "Do you like this option?"
 let result = ""
+
 //TODO have server generate a room code instead
 
 class SessionRoom extends React.Component {
@@ -49,7 +50,7 @@ class SessionRoom extends React.Component {
             dict[cardResults[i].name] = cardResults[i].result
         }
         console.log(dict)
-        try {
+        try { //get options here if its not a cutsom room
             console.log("Attempting to send swipe results");
             axios.post('http://localhost:3000/option/results', {roomCode: roomCode, results: dict}, {headers: {'Content-Type': 'application/json'}}).then(res => {
                 console.log(res);
@@ -67,9 +68,18 @@ class SessionRoom extends React.Component {
     render () {
         let ui = ''
         let roomData = this.props.location.state; 
-        roomCode = roomData.roomCode;
-        console.log(roomData);
-        
+        roomCode = roomData ? roomData.roomCode: "12345";
+        //console.log(roomData);
+        try {
+            console.log("Attempting to get room data");
+            axios.get('http://localhost:3000/room/', {roomCode: roomCode}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                console.log(res);
+            });
+        } catch (err) {
+            console.log(err);
+            console.log("Failed to get room details");
+        }
+
         if (state === 0) {
             ui = (<div>
             <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />
