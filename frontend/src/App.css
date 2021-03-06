@@ -164,3 +164,8 @@ select:focus{
   width:100%;
   bottom:0px;
 }
+
+th, td {
+  font-size: 30px;
+  width: 99%;
+}

@@ -5,7 +5,7 @@ import CreateRoom from './CreateRoom.js'
 import JoinRoom from './JoinRoom.js'
 import axios from "axios";
 
-import SessionRoom from './SessionRoom';
+import SessionRoom from './SessionRoom.js';
 
 function CreateButton() {
   let history = useHistory();

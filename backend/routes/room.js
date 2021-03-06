@@ -39,10 +39,10 @@ router.get('/', async function(req, res, next) {
   }
 
   roomObj["members"] = roomObj["members"].map(x => 
-    cookieHelper.cookieDecode(x, cookieHelper.secretKey).user
+    cookieHelper.cookieDecode(x["id"], cookieHelper.secretKey).user
   );
   
-  roomObj["owner"] = cookieHelper.cookieDecode(roomObj["owner"], cookieHelper.secretKey).user;
+  roomObj["owner"] = cookieHelper.cookieDecode(roomObj["owner"]["id"], cookieHelper.secretKey).user;
   res.json(roomObj);
 });
 
@@ -106,9 +106,11 @@ router.post('/', async function(req, res, next) {
 */
 router.delete('/', async function(req, res, next) {
   let roomCode = req.body.roomCode;
+  console.log(roomCode)
   if(!roomCode || !helper.validRoomCode(roomCode)) 
   {
     res.status(400).send("400 Bad Request: please include roomCode in request body.");
+    return;
   }
   
   let db = dbConn.getDb();
@@ -119,6 +121,7 @@ router.delete('/', async function(req, res, next) {
   if(deleteRoomRes["result"]["ok"] != 1)
   {
     res.status(500).send("500 Internal Server Error: database delete failed.");
+    return;
   }
 
   res.status(200).send("200 OK: room deleted.");

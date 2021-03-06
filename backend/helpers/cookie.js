@@ -18,7 +18,6 @@ function generateCookie(user, roomCode)
 
 function cookieDecode(cookie, secretKey)
 {
-  console.log(cookie)
   return jwt.verify(cookie, secretKey, { algorithms: ["HS256"]});
 }
 
