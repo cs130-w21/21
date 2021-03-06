@@ -5,23 +5,36 @@ import Card from './Card';
 import axios from "axios";
 import {useHistory} from 'react-router-dom';
 
-let state = 0; //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
+
 let roomCode = "12345"
 let cards = []
 let cardResults = []
 let currentIndex = 0
 let roomHeader = "Do you like this option?"
-let result = ""
-let poll = true;
-//TODO have server generate a room code instead
+
 
 class SessionRoom extends React.Component {
+    constructor(props)
+    {
+        super(props);
+        this.state = {
+            roomState: 0, //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
+            results: [],
+            poll: true
+        };
+        cards = [];
+        cardResults = [];
+        currentIndex = 0;
+        
+        this.handleMainMenu = this.handleMainMenu.bind(this);
+    }
+
     componentDidMount() {
         this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
     }
 
     handleToUpdate() { //This is called by child nomination component
-        state = 1
+        this.setState({roomState: 1});
         currentIndex = 0
         //GET request here to get list of all cards
         for(let i=cards.length-1; i > -1; i--){
@@ -47,7 +60,7 @@ class SessionRoom extends React.Component {
     }
     doneVoting(){
         console.log("done voting" + cardResults)
-        state = 2
+        this.setState({roomState: 2});
         //adding code here to retrieve results and display winner
         let dict = {}
         for(let i = 0; i<cardResults.length; i++){
@@ -72,13 +85,11 @@ class SessionRoom extends React.Component {
             console.log("Failed to send results");
         }
 
-
-        result = "Placeholder"
         this.forceUpdate()
     }
 
     roomFinishedVoting() {
-        if(poll)
+        if(this.state.poll)
         {
             axios.get('http://localhost:3000/roomDoneVoting', {
                 headers: {'Content-Type': 'application/json'},
@@ -86,29 +97,43 @@ class SessionRoom extends React.Component {
             }).then(res => {
                 if(res.data.done)
                 {
-                    state = 3;
-                    poll = false;
-                    this.forceUpdate();
+                    this.state.poll = false;
+                    this.getVotingResults();
                 }
             });
         }
     }
 
-    getVotingResults() {
-        try {
-            axios.get("http://localhost:3000/room", {
+    getVotingResults()
+    {
+        axios.get("http://localhost:3000/room", {
+            headers: {'Content-Type': 'application/json'},
+            withCredentials: true
+        }).then(res => {
+            let votingResults = res["data"]["options"];
+            let sortedVotingResults = votingResults.sort((a, b) => b.yes - a.yes);
+            this.setState({ 
+                results: sortedVotingResults, 
+                roomState: 3
+            });
+        });
+    }
+
+    handleMainMenu()
+    {
+        console.log(roomCode)
+        axios.delete(
+            "http://localhost:3000/room",
+            {
+                data: { roomCode: roomCode },
                 headers: {'Content-Type': 'application/json'},
                 withCredentials: true
-            }).then(res => {
-                console.log(res)
-                return res;
-            });
-        } catch (err) {
-            console.log(err);
-            console.log("Failed to send results");
-        }
+            }
+        ).then(() => {
+            console.log("room deleted")
+        });
 
-        return null;
+        this.props.history.push('/');
     }
 
     render () {
@@ -126,30 +151,51 @@ class SessionRoom extends React.Component {
             console.log("Failed to get room details");
         }
 
-        if (state === 0) {
+        if (this.state.roomState === 0) {
             ui = (<div>
             <Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />
             <h2 className="RoomCode">
                 Room Code: {roomCode}
             </h2>
         </div>)
-        } else if (state === 1){
+        } else if (this.state.roomState === 1){
             ui = (<div>
                 <Card cardsList={cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
                 <h2 className="RoomCode">
                     Room Code: {roomCode}
                 </h2>
             </div>)//retrieve cards from backend or store locally
-        } else if (state === 2) {
+        } else if (this.state.roomState === 2) {
             ui = (<div>
                 <h2>Waiting for others to finish voting...</h2>
             </div>)
         } else {
-            let votingResults = this.getVotingResults();
-            console.log(votingResults)
             ui = (
                 <div>
-                    <h2>Winner: {result}</h2>
+                    <h2>Winner: {this.state.results[0] ? this.state.results[0].name : ""}</h2>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <th>Option</th>
+                            <th>Votes</th>
+                        </tr>
+                        {this.state.results.map((option, index) => {
+                            return (
+                                <tr key={index}>
+                                    <td>{option.name}</td>
+                                    <td>{option.yes}</td>
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
+                    <button 
+                        className="MenuButton" 
+                        type="button"
+                        style={{marginTop: 50 + "px"}}
+                        onClick={this.handleMainMenu}>
+                        Main Menu
+                    </button>
                 </div>
             )
         }
