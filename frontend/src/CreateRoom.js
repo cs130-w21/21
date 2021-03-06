@@ -8,8 +8,9 @@ function CreateRoomButton() {
     let history = useHistory();
  
     function handleClick() {
-        if (optionClicked === 3) {
-            console.log(optionClicked) //This is where we would want to POST request
+        console.log(optionClicked) //This is where we would want to POST request
+        if (optionClicked == 3) {
+
             try {
                 console.log("Attempting to make post request");
                 axios.post('http://localhost:3000/room', {user: "Owner"}, {headers: {'Content-Type': 'application/json'}}).then(res => {
