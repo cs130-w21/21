@@ -13,7 +13,13 @@ function CreateRoomButton() {
 
             try {
                 console.log("Attempting to make post request");
-                axios.post('http://localhost:3000/room', {user: "Owner"}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                axios.post(
+                    'http://localhost:3000/room', 
+                    {user: "Owner"}, 
+                    {
+                        headers: {'Content-Type': 'application/json'},
+                        withCredentials: true
+                    }).then(res => {
                     console.log(res);
                     console.log("Successfully finished post request")
                     history.push("/room", res.data);

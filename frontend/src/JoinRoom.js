@@ -32,7 +32,11 @@ function JoinRoom() {
     
         try {
             console.log("Attempting post request to join room")
-            axios.post("http://localhost:3000/room/join", {user: "Member", roomCode: roomCode}).then(res => {
+            axios.post(
+                "http://localhost:3000/room/join", 
+                {user: "Member", roomCode: roomCode},
+                {withCredentials: true}
+            ).then(res => {
                 console.log(res)
                 console.log("Successfully joined room")
                 history.push("/room", res.data)
