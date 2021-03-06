@@ -3,17 +3,22 @@ import ReactDOM from 'react-dom';
 import TinderCard from 'react-tinder-card';
 import Card from './Card';
 import axios from "axios";
+import {useHistory} from 'react-router-dom';
 
-let state = 0; //0 = nomination, 1 = swipe, 2 = winner
+let state = 0; //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
 let roomCode = "12345"
 let cards = []
 let cardResults = []
 let currentIndex = 0
 let roomHeader = "Do you like this option?"
 let result = ""
+let poll = true;
 //TODO have server generate a room code instead
 
 class SessionRoom extends React.Component {
+    componentDidMount() {
+        this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
+    }
 
     handleToUpdate() { //This is called by child nomination component
         state = 1
@@ -71,6 +76,41 @@ class SessionRoom extends React.Component {
         result = "Placeholder"
         this.forceUpdate()
     }
+
+    roomFinishedVoting() {
+        if(poll)
+        {
+            axios.get('http://localhost:3000/roomDoneVoting', {
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+                if(res.data.done)
+                {
+                    state = 3;
+                    poll = false;
+                    this.forceUpdate();
+                }
+            });
+        }
+    }
+
+    getVotingResults() {
+        try {
+            axios.get("http://localhost:3000/room", {
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+                console.log(res)
+                return res;
+            });
+        } catch (err) {
+            console.log(err);
+            console.log("Failed to send results");
+        }
+
+        return null;
+    }
+
     render () {
         let ui = ''
         let roomData = this.props.location.state; 
@@ -91,11 +131,18 @@ class SessionRoom extends React.Component {
                     Room Code: {roomCode}
                 </h2>
             </div>)//retrieve cards from backend or store locally
-        } else {
+        } else if (state === 2) {
             ui = (<div>
-                <h2>Winner:</h2>
-                <h3>{result}</h3>
+                <h2>Waiting for others to finish voting...</h2>
             </div>)
+        } else {
+            let votingResults = this.getVotingResults();
+            console.log(votingResults)
+            ui = (
+                <div>
+                    <h2>Winner: {result}</h2>
+                </div>
+            )
         }
         return (
             <div className='PageFormat'>
