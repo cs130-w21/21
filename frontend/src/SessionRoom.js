@@ -9,6 +9,7 @@ import ReactPolling from 'react-polling';
 
 let roomCode = "12345"
 let cards = []
+let tinder_cards = []
 let cardResults = []
 let currentIndex = 0
 let roomHeader = "Do you like this option?"
@@ -49,10 +50,18 @@ class SessionRoom extends React.Component {
     handleToUpdate() { //This is called by child nomination component
         this.setState({roomState: 1});
         currentIndex = 0
-
-        for(let i=cards.length-1; i > -1; i--){
-            cardResults.push({name: cards[i], result: false})
+        axios.get('http://localhost:3000/room', {
+          headers: {'Content-Type': 'application/json'},
+          withCredentials: true
+      }).then(res => {
+          let options = res.data.options;
+          for (let option of options) {
+            tinder_cards.push(option.name);
+          }
+          for(let i=tinder_cards.length-1; i > -1; i--){
+            cardResults.push({name: tinder_cards[i], result: false})
         }
+      });
         this.forceUpdate();
     }
     swipeRight(){
@@ -155,7 +164,7 @@ class SessionRoom extends React.Component {
         let roomData = this.props.location.state; 
         roomCode = roomData ? roomData.roomCode: "12345";
 
-        console.log("state " + this.state.roomState + "\ncards " + cards);
+        console.log("state " + this.state.roomState + "\ncards " + tinder_cards);
 
         if (this.state.roomState === 0) {
             ui = (<div>
@@ -167,7 +176,7 @@ class SessionRoom extends React.Component {
         } else if (this.state.roomState === 1){
 
             ui = (<div>
-                <Card cardsList={cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
+                <Card cardsList={tinder_cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
                 <h2 className="RoomCode">
                     Room Code: {roomCode}
                 </h2>
