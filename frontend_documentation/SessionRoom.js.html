@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: SessionRoom.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: SessionRoom.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React from 'react';
+import ReactDOM from 'react-dom';
+import TinderCard from 'react-tinder-card';
+import Card from './Card';
+import axios from "axios";
+import {useHistory} from 'react-router-dom';
+import ReactPolling from 'react-polling';
+
+
+let roomCode = "12345"
+let cards = []
+let tinder_cards = []
+let cardResults = []
+let currentIndex = 0
+let roomHeader = "Do you like this option?"
+
+/** Class handling voting room operations. */
+class SessionRoom extends React.Component {
+    /**
+     * Creates a room.
+     * @constructor
+     * @param {{roomCode: String, options:String[]}} props - The room code and any voting options for the room.
+     */
+    constructor(props)
+    {
+        super(props);
+        this.state = {
+            roomState: 0, //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
+            results: [],
+            vote_poll: true
+        };
+        cards = [];
+        cardResults = [];
+        currentIndex = 0;
+        let roomData = props.location.state;
+        //console.log(roomData)
+        if (roomData.options) { //there are options
+            for (let i = 0; i &lt; roomData.options.length; i++){
+                cards.push(roomData.options[i])
+            }
+            this.state = {
+                roomState: 1, //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
+                results: [],
+                poll: true
+            };
+            this.handleToUpdate()
+        }
+        this.handleMainMenu = this.handleMainMenu.bind(this);
+    }
+
+    componentDidMount() {
+        this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
+    }
+
+    /**
+     * Handles setting up input to send to the backend, and updates UI to a waiting state.
+     */
+    handleToUpdate() { //This is called by child nomination component
+        this.setState({roomState: 1});
+        currentIndex = 0
+        axios.get('http://localhost:3000/room', {
+          headers: {'Content-Type': 'application/json'},
+          withCredentials: true
+      }).then(res => {
+          let options = res.data.options;
+          for (let option of options) {
+            tinder_cards.push(option.name);
+          }
+          for(let i=tinder_cards.length-1; i > -1; i--){
+            cardResults.push({name: tinder_cards[i], result: false})
+        }
+      });
+        this.forceUpdate();
+    }
+    /**
+     * Sets the latest options as swiped right, indicating in favor for.
+     */
+    swipeRight(){
+        console.log("swiped right")
+        cardResults[currentIndex].result = "True"
+        currentIndex++
+        if(currentIndex >= cardResults.length){
+            this.doneVoting()
+        }
+    }
+    /**
+     * Sets the latest options as swiped left, indicating not in favor for.
+     */
+    swipeLeft(){
+        console.log("swiped left")
+        cardResults[currentIndex].result = "False"
+        currentIndex++
+        if(currentIndex >= cardResults.length){
+            this.doneVoting()
+        }
+    }
+    /**
+     * Sends results of voting to the backend, and updates UI state into waiting for everyone else to finish.
+     */
+    doneVoting(){
+        console.log("done voting")
+        this.setState({roomState: 2});
+        //adding code here to retrieve results and display winner
+        let dict = {}
+        for(let i = 0; i&lt;cardResults.length; i++){
+            dict[cardResults[i].name] = cardResults[i].result
+        }
+        console.log(dict)
+        try { //get options here if its not a cutsom room
+            console.log("Attempting to send swipe results");
+            axios.post(
+                'http://localhost:3000/option/results', 
+                {roomCode: roomCode, results: dict}, 
+                {
+                    headers: {'Content-Type': 'application/json'},
+                    withCredentials: true
+                }
+            ).then(res => {
+                console.log(res);
+                console.log("Successfully finished result post request")
+            });
+        } catch (err) {
+            console.log(err);
+            console.log("Failed to send results");
+        }
+
+        this.forceUpdate()
+    }
+
+    /**
+     * Polls the backend to see if ever member in the room is finished voting. If everyone is finished, getVotingResults() is called.
+     */
+    roomFinishedVoting() {
+        if(this.state.vote_poll)
+        {
+            console.log("Polling to see if voting finished")
+            axios.get('http://localhost:3000/roomDoneVoting', {
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+                if(res.data.done)
+                {
+                    this.state.vote_poll = false;
+                    this.getVotingResults();
+                }
+            });
+        }
+    }
+    /**
+     * Sorts voting results and updates UI to display results.
+     */
+    getVotingResults()
+    {
+        axios.get("http://localhost:3000/room", {
+            headers: {'Content-Type': 'application/json'},
+            withCredentials: true
+        }).then(res => {
+            let votingResults = res["data"]["options"];
+            let sortedVotingResults = votingResults.sort((a, b) => b.yes - a.yes);
+            this.setState({ 
+                results: sortedVotingResults, 
+                roomState: 3
+            });
+        });
+    }
+
+    /**
+     * Ends the current room, deletes it fron the backend and takes you back to the main menu.
+     */
+    handleMainMenu()
+    {
+        console.log(roomCode)
+        axios.delete(
+            "http://localhost:3000/room",
+            {
+                data: { roomCode: roomCode },
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }
+        ).then(() => {
+            console.log("room deleted")
+        });
+
+        this.props.history.push('/');
+    }
+    /**
+     * Renders UI.
+     */
+    render () {
+        let ui = ''
+        let roomData = this.props.location.state; 
+        roomCode = roomData ? roomData.roomCode: "12345";
+
+        console.log("state " + this.state.roomState + "\ncards " + tinder_cards);
+
+        if (this.state.roomState === 0) {
+            ui = (&lt;div>
+            &lt;Nomination handleToUpdate = {this.handleToUpdate.bind(this)} />
+            &lt;h2 className="RoomCode">
+                Room Code: {roomCode}
+            &lt;/h2>
+        &lt;/div>)
+        } else if (this.state.roomState === 1){
+
+            ui = (&lt;div>
+                &lt;Card cardsList={tinder_cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
+                &lt;h2 className="RoomCode">
+                    Room Code: {roomCode}
+                &lt;/h2>
+            &lt;/div>)//retrieve cards from backend or store locally
+        } else if (this.state.roomState === 2) { // Waiting state
+
+            ui = (&lt;div>
+                &lt;h2>Waiting for others to finish voting...&lt;/h2>
+            &lt;/div>) 
+
+        } else {
+            console.log("results" + this.state.results)
+            ui = (
+                &lt;div>
+                    &lt;h2>Winner: {this.state.results[0] ? this.state.results[0].name : ""}&lt;/h2>
+                    &lt;table>
+                        &lt;tbody>
+                        &lt;tr>
+                            &lt;th>Option&lt;/th>
+                            &lt;th>Votes&lt;/th>
+                        &lt;/tr>
+                        {this.state.results.map((option, index) => {
+                            return (
+                                &lt;tr key={index}>
+                                    &lt;td>{option.name}&lt;/td>
+                                    &lt;td>{option.yes}&lt;/td>
+                                &lt;/tr>
+                            )
+                        })}
+                        &lt;/tbody>
+                    &lt;/table>
+                    &lt;button 
+                        className="MenuButton" 
+                        type="button"
+                        style={{marginTop: 50 + "px"}}
+                        onClick={this.handleMainMenu}>
+                        Main Menu
+                    &lt;/button>
+                &lt;/div>
+            )
+        }
+        return (
+            &lt;div className='PageFormat'>
+                &lt;div>
+                    {ui}
+                &lt;/div>
+            &lt;/div>
+        );
+    }
+}
+
+export default SessionRoom;
+
+/**
+ * Class handling nominations requests.
+ */
+class Nomination extends React.Component {
+    /**
+     * @constructor
+     * @param {{handleToUpdate: function}} props - Callback funtion of parent component to indicate nomination of options is done.
+     */
+    constructor(props) {
+      super(props);
+      this.state = { options: [], ready: false, nomination_poll: true}
+      this.handleOptionSubmitted = this.handleOptionSubmitted.bind(this);
+      this.done = this.done.bind(this)
+    }
+    
+    componentDidMount() {
+        this.timer = setInterval(()=> this.roomFinishedNominating(), 5000);
+    }
+
+    /**
+     * Checks backend to see if everyone is done nominating. Calls callback function provided in constructer if everyone is finished.
+     */
+    roomFinishedNominating() {
+        if (this.state.nomination_poll)
+        {
+            const isDoneNominating = (member) => member.doneNominating == true;
+            console.log("Polling to see if nomination is finished")
+            axios.get('http://localhost:3000/room', {
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+
+                let roomData = res.data;
+                console.log(res);
+                console.log(roomData);
+
+                let members = roomData.members;
+                let membersDoneNominating = members.every(isDoneNominating);
+                let ownerDoneNominating = roomData.owner.doneNominating;
+
+                if (ownerDoneNominating &amp;&amp; membersDoneNominating) {
+                    this.state.nomination_poll = false;
+                    console.log("Everyone is finished with their nominations")
+                    this.props.handleToUpdate();
+                }
+            });
+        }
+    }
+
+    /**
+     * Adds item in input box to list of nominations. 
+     */
+    handleOptionSubmitted () {
+        if (this.newText.value === "")
+            return
+        this.state.options.push(this.newText.value)
+        this.newText.value = ""
+        this.forceUpdate()
+    }
+    /**
+     * Sends nomination options to backend, and sets user as don nominating.
+     */
+    done() {
+        this.setState((state) => {
+            return {options: this.state.options, ready: true}
+          });
+        cards = this.state.options
+        console.log('list of cards:' + cards)
+        for (let i = 0; i &lt; cards.length; i++){  
+            try {
+                console.log("Attempting to send option");
+                axios.post('http://localhost:3000/option', {roomCode: roomCode, option: cards[i]}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                    console.log(res);
+                    console.log("Successfully finished options post request")
+                });
+            } catch (err) {
+                console.log(err);
+                console.log("Failed to send option");
+            }
+        }
+
+        // Make another post request to set done nominating field to true
+        try {
+            console.log("Attempting to POST to set doneNominating to true")
+            axios.post('http://localhost:3000/option/nomination', {roomCode: roomCode},{
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+                console.log(res);
+                console.log("Successfully set doneNominating to true")
+            });
+        } catch (err) {
+            console.log(err)
+            console.log("Failed to set doneNominating to true");
+        }
+    }
+    /**
+     * Renders Nomination UI
+     */
+    render() {
+        
+        let nominations = []
+        for(let i = 0; i &lt; this.state.options.length; i++){
+            nominations.push(&lt;div key={i}>{this.state.options[i]}&lt;/div>)
+        }
+        if (this.state.ready) {
+            return(&lt;div>
+                &lt;h3>
+                    Waiting for others to finish nominating options
+                &lt;/h3>
+                &lt;div className="CurrentNominations">
+                    Your current nominations:
+                        &lt;div className= "Center">
+                            &lt;div className="ScrollBox">
+                                {nominations}
+                            &lt;/div>
+                        &lt;/div>
+                &lt;/div>
+            &lt;/div>)
+        } else {
+            
+            return (
+                &lt;div className="PageFormat">
+                    &lt;h2>Nominate Options&lt;/h2>
+                    &lt;form onSubmit={this.done}>
+                        &lt;label>
+                            Add option:
+                        &lt;/label>
+                        &lt;br>&lt;/br>
+                        &lt;input className="InputOptionsField" type="text" maxLength="15" ref={(ip) => {this.newText = ip}}/>
+                        &lt;br>&lt;/br>
+            
+                        &lt;button className="SubmitButton" type="button" onClick={this.handleOptionSubmitted}>
+                            Add
+                        &lt;/button>
+                        
+                    &lt;/form>
+                    &lt;div className="CurrentNominations">
+                        Your current nominations:
+                        &lt;div className= "Center">
+                            &lt;div className="ScrollBox">
+                                {nominations}
+                            &lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+                    &lt;button className="SubmitButton" type="button" onClick={this.done}> 
+                        Done
+                    &lt;/button>
+                &lt;/div>
+            );
+        }
+    }
+  }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Nomination.html">Nomination</a></li><li><a href="SessionRoom.html">SessionRoom</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Sun Mar 07 2021 14:28:08 GMT-0800 (Pacific Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
