@@ -82,7 +82,8 @@ router.post('/', async function(req, res, next) {
     $set: {
       "owner": {
         "id": cookie,
-        "doneVoting": false
+        "doneVoting": false,
+        "doneNominating": false
       }
     }
   });
@@ -159,7 +160,8 @@ router.post('/join', async function(req, res, next) {
     $addToSet: {
       "members": {
         "id": cookie,
-        "doneVoting": false
+        "doneVoting": false,
+        "doneNominating": false
       }
     }
   });

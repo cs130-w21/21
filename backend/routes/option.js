@@ -165,4 +165,38 @@ router.post("/results", async function(req, res, next) {
   res.status(200).send("200 OK: successfully processed results.");
 });
 
+/*
+  POST /option/nomination to update a user's doneNominating field to backend.
+*/
+router.post("/nomination", async function(req, res, next) {
+  let db = dbConn.getDb();
+
+  // logic for setting user doneVoting to true, and
+  // checking if all done voting
+  let cookie = req.cookies["pickrCookie"];
+  let res1 = await db.collection("Rooms").updateOne({
+    "members.id": cookie
+  }, {
+    $set: {
+      "members.$.doneNominating": true
+    }
+  });
+
+  let res2 = await db.collection("Rooms").updateOne({
+    "owner.id": cookie
+  }, {
+    $set: {
+      "owner.doneNominating": true
+    }
+  });
+
+  if(res1["result"]["ok"] != 1 || res2["result"]["ok"] != 1)
+  {
+    res.status(500).send("500 Internal Server Error: nomination failure");
+    return;
+  }
+
+  res.status(200).send("200 OK: successfully processed nomination.");
+});
+
 module.exports = router;
