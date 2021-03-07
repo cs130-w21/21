@@ -43,32 +43,12 @@ class SessionRoom extends React.Component {
     }
 
     componentDidMount() {
-        //this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
+        this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
     }
 
     handleToUpdate() { //This is called by child nomination component
         this.setState({roomState: 1});
         currentIndex = 0
-        //GET request here to get list of all cards
-        // For some reason, this doesn't set the cards correctly when passing to the Card component. Maybe try doing request there instead
-        /*
-        try {
-            console.log("Sending GET request to retrieve all room nominations")
-            axios.get('http://localhost:3000/room', {
-                headers: {'Content-Type': 'application/json'},
-                withCredentials: true
-            }).then(res => {
-                let options = res.data.options;
-                console.log(options);
-                tinder_cards = []
-                for (let option of options) {
-                    tinder_cards.push(option.name)
-                }
-                console.log(tinder_cards)
-            });
-        } catch (err) {
-            console.log(err);
-        } */
 
         for(let i=cards.length-1; i > -1; i--){
             cardResults.push({name: cards[i], result: false})
@@ -174,11 +154,8 @@ class SessionRoom extends React.Component {
         let ui = ''
         let roomData = this.props.location.state; 
         roomCode = roomData ? roomData.roomCode: "12345";
-<<<<<<< HEAD
-=======
 
         console.log("state " + this.state.roomState + "\ncards " + cards);
->>>>>>> 60dee4b4c6ef74909f0d9a0e2f119c3c2619cecd
 
         if (this.state.roomState === 0) {
             ui = (<div>
