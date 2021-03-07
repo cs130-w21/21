@@ -14,8 +14,13 @@ let cardResults = []
 let currentIndex = 0
 let roomHeader = "Do you like this option?"
 
-
+/** Class handling voting room operations. */
 class SessionRoom extends React.Component {
+    /**
+     * Creates a room.
+     * @constructor
+     * @param {{roomCode: String, options:String[]}} props - The room code and any voting options for the room.
+     */
     constructor(props)
     {
         super(props);
@@ -47,6 +52,9 @@ class SessionRoom extends React.Component {
         this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
     }
 
+    /**
+     * Handles setting up input to send to the backend, and updates UI to a waiting state.
+     */
     handleToUpdate() { //This is called by child nomination component
         this.setState({roomState: 1});
         currentIndex = 0
@@ -64,6 +72,9 @@ class SessionRoom extends React.Component {
       });
         this.forceUpdate();
     }
+    /**
+     * Sets the latest options as swiped right, indicating in favor for.
+     */
     swipeRight(){
         console.log("swiped right")
         cardResults[currentIndex].result = "True"
@@ -72,6 +83,9 @@ class SessionRoom extends React.Component {
             this.doneVoting()
         }
     }
+    /**
+     * Sets the latest options as swiped left, indicating not in favor for.
+     */
     swipeLeft(){
         console.log("swiped left")
         cardResults[currentIndex].result = "False"
@@ -80,6 +94,9 @@ class SessionRoom extends React.Component {
             this.doneVoting()
         }
     }
+    /**
+     * Sends results of voting to the backend, and updates UI state into waiting for everyone else to finish.
+     */
     doneVoting(){
         console.log("done voting")
         this.setState({roomState: 2});
@@ -110,6 +127,9 @@ class SessionRoom extends React.Component {
         this.forceUpdate()
     }
 
+    /**
+     * Polls the backend to see if ever member in the room is finished voting. If everyone is finished, getVotingResults() is called.
+     */
     roomFinishedVoting() {
         if(this.state.vote_poll)
         {
@@ -126,7 +146,9 @@ class SessionRoom extends React.Component {
             });
         }
     }
-
+    /**
+     * Sorts voting results and updates UI to display results.
+     */
     getVotingResults()
     {
         axios.get("http://localhost:3000/room", {
@@ -142,6 +164,9 @@ class SessionRoom extends React.Component {
         });
     }
 
+    /**
+     * Ends the current room, deletes it fron the backend and takes you back to the main menu.
+     */
     handleMainMenu()
     {
         console.log(roomCode)
@@ -158,7 +183,9 @@ class SessionRoom extends React.Component {
 
         this.props.history.push('/');
     }
-
+    /**
+     * Renders UI.
+     */
     render () {
         let ui = ''
         let roomData = this.props.location.state; 
@@ -230,7 +257,14 @@ class SessionRoom extends React.Component {
 
 export default SessionRoom;
 
+/**
+ * Class handling nominations requests.
+ */
 class Nomination extends React.Component {
+    /**
+     * @constructor
+     * @param {{handleToUpdate: function}} props - Callback funtion of parent component to indicate nomination of options is done.
+     */
     constructor(props) {
       super(props);
       this.state = { options: [], ready: false, nomination_poll: true}
@@ -242,7 +276,9 @@ class Nomination extends React.Component {
         this.timer = setInterval(()=> this.roomFinishedNominating(), 5000);
     }
 
-
+    /**
+     * Checks backend to see if everyone is done nominating. Calls callback function provided in constructer if everyone is finished.
+     */
     roomFinishedNominating() {
         if (this.state.nomination_poll)
         {
@@ -270,6 +306,9 @@ class Nomination extends React.Component {
         }
     }
 
+    /**
+     * Adds item in input box to list of nominations. 
+     */
     handleOptionSubmitted () {
         if (this.newText.value === "")
             return
@@ -277,6 +316,9 @@ class Nomination extends React.Component {
         this.newText.value = ""
         this.forceUpdate()
     }
+    /**
+     * Sends nomination options to backend, and sets user as don nominating.
+     */
     done() {
         this.setState((state) => {
             return {options: this.state.options, ready: true}
@@ -311,7 +353,9 @@ class Nomination extends React.Component {
             console.log("Failed to set doneNominating to true");
         }
     }
-
+    /**
+     * Renders Nomination UI
+     */
     render() {
         
         let nominations = []
