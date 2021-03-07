@@ -171,8 +171,7 @@ router.post("/results", async function(req, res, next) {
 router.post("/nomination", async function(req, res, next) {
   let db = dbConn.getDb();
 
-  // logic for setting user doneVoting to true, and
-  // checking if all done voting
+  // logic for setting user doneNominating to true
   let cookie = req.cookies["pickrCookie"];
   let res1 = await db.collection("Rooms").updateOne({
     "members.id": cookie

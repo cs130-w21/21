@@ -4,6 +4,7 @@ import TinderCard from 'react-tinder-card';
 import Card from './Card';
 import axios from "axios";
 import {useHistory} from 'react-router-dom';
+import ReactPolling from 'react-polling';
 
 
 let roomCode = "12345"
@@ -20,7 +21,7 @@ class SessionRoom extends React.Component {
         this.state = {
             roomState: 0, //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
             results: [],
-            poll: true
+            vote_poll: true
         };
         cards = [];
         cardResults = [];
@@ -30,13 +31,33 @@ class SessionRoom extends React.Component {
     }
 
     componentDidMount() {
-        this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
+        //this.timer = setInterval(()=> this.roomFinishedVoting(), 3000);
     }
 
     handleToUpdate() { //This is called by child nomination component
         this.setState({roomState: 1});
         currentIndex = 0
         //GET request here to get list of all cards
+        // For some reason, this doesn't set the cards correctly when passing to the Card component. Maybe try doing request there instead
+        /*
+        try {
+            console.log("Sending GET request to retrieve all room nominations")
+            axios.get('http://localhost:3000/room', {
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+                let options = res.data.options;
+                console.log(options);
+                tinder_cards = []
+                for (let option of options) {
+                    tinder_cards.push(option.name)
+                }
+                console.log(tinder_cards)
+            });
+        } catch (err) {
+            console.log(err);
+        } */
+
         for(let i=cards.length-1; i > -1; i--){
             cardResults.push({name: cards[i], result: false})
         }
@@ -89,15 +110,16 @@ class SessionRoom extends React.Component {
     }
 
     roomFinishedVoting() {
-        if(this.state.poll)
+        if(this.state.vote_poll)
         {
+            console.log("Polling to see if voting finished")
             axios.get('http://localhost:3000/roomDoneVoting', {
                 headers: {'Content-Type': 'application/json'},
                 withCredentials: true
             }).then(res => {
                 if(res.data.done)
                 {
-                    this.state.poll = false;
+                    this.state.vote_poll = false;
                     this.getVotingResults();
                 }
             });
@@ -140,16 +162,6 @@ class SessionRoom extends React.Component {
         let ui = ''
         let roomData = this.props.location.state; 
         roomCode = roomData ? roomData.roomCode: "12345";
-        //console.log(roomData);
-        try {
-            console.log("Attempting to get room data");
-            axios.get('http://localhost:3000/room/', {roomCode: roomCode}, {headers: {'Content-Type': 'application/json'}}).then(res => {
-                console.log(res);
-            });
-        } catch (err) {
-            console.log(err);
-            console.log("Failed to get room details");
-        }
 
         if (this.state.roomState === 0) {
             ui = (<div>
@@ -159,16 +171,19 @@ class SessionRoom extends React.Component {
             </h2>
         </div>)
         } else if (this.state.roomState === 1){
+
             ui = (<div>
                 <Card cardsList={cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
                 <h2 className="RoomCode">
                     Room Code: {roomCode}
                 </h2>
             </div>)//retrieve cards from backend or store locally
-        } else if (this.state.roomState === 2) {
+        } else if (this.state.roomState === 2) { // Waiting state
+
             ui = (<div>
                 <h2>Waiting for others to finish voting...</h2>
-            </div>)
+            </div>) 
+
         } else {
             ui = (
                 <div>
@@ -214,10 +229,43 @@ export default SessionRoom;
 class Nomination extends React.Component {
     constructor(props) {
       super(props);
-      this.state = { options: [], ready: false}
+      this.state = { options: [], ready: false, nomination_poll: true}
       this.handleOptionSubmitted = this.handleOptionSubmitted.bind(this);
       this.done = this.done.bind(this)
     }
+    
+    componentDidMount() {
+        this.timer = setInterval(()=> this.roomFinishedNominating(), 5000);
+    }
+
+
+    roomFinishedNominating() {
+        if (this.state.nomination_poll)
+        {
+            const isDoneNominating = (member) => member.doneNominating == true;
+            console.log("Polling to see if nomination is finished")
+            axios.get('http://localhost:3000/room', {
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+
+                let roomData = res.data;
+                console.log(res);
+                console.log(roomData);
+
+                let members = roomData.members;
+                let membersDoneNominating = members.every(isDoneNominating);
+                let ownerDoneNominating = roomData.owner.doneNominating;
+
+                if (ownerDoneNominating && membersDoneNominating) {
+                    this.state.nomination_poll = false;
+                    console.log("Everyone is finished with their nominations")
+                    this.props.handleToUpdate();
+                }
+            });
+        }
+    }
+
     handleOptionSubmitted () {
         if (this.newText.value === "")
             return
@@ -244,11 +292,24 @@ class Nomination extends React.Component {
             }
         }
 
-        setTimeout(this.props.handleToUpdate, 5000) //simulate a 5 second wait
-        //this.props.handleToUpdate();
+        // Make another post request to set done nominating field to true
+        try {
+            console.log("Attempting to POST to set doneNominating to true")
+            axios.post('http://localhost:3000/option/nomination', {roomCode: roomCode},{
+                headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
+                console.log(res);
+                console.log("Successfully set doneNominating to true")
+            });
+        } catch (err) {
+            console.log(err)
+            console.log("Failed to set doneNominating to true");
+        }
     }
 
     render() {
+        
         let nominations = []
         for(let i = 0; i < this.state.options.length; i++){
             nominations.push(<div key={i}>{this.state.options[i]}</div>)

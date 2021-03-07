@@ -37,12 +37,12 @@ router.get('/', async function(req, res, next) {
     res.json({});
     return;
   }
-
+  /*
   roomObj["members"] = roomObj["members"].map(x => 
     cookieHelper.cookieDecode(x["id"], cookieHelper.secretKey).user
   );
   
-  roomObj["owner"] = cookieHelper.cookieDecode(roomObj["owner"]["id"], cookieHelper.secretKey).user;
+  roomObj["owner"] = cookieHelper.cookieDecode(roomObj["owner"]["id"], cookieHelper.secretKey).user;*/
   res.json(roomObj);
 });
 
