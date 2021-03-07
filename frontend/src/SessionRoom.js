@@ -26,7 +26,19 @@ class SessionRoom extends React.Component {
         cards = [];
         cardResults = [];
         currentIndex = 0;
-        
+        let roomData = props.location.state;
+        //console.log(roomData)
+        if (roomData.options) { //there are options
+            for (let i = 0; i < roomData.options.length; i++){
+                cards.push(roomData.options[i])
+            }
+            this.state = {
+                roomState: 1, //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
+                results: [],
+                poll: true
+            };
+            this.handleToUpdate()
+        }
         this.handleMainMenu = this.handleMainMenu.bind(this);
     }
 
@@ -80,7 +92,7 @@ class SessionRoom extends React.Component {
         }
     }
     doneVoting(){
-        console.log("done voting" + cardResults)
+        console.log("done voting")
         this.setState({roomState: 2});
         //adding code here to retrieve results and display winner
         let dict = {}
@@ -162,6 +174,11 @@ class SessionRoom extends React.Component {
         let ui = ''
         let roomData = this.props.location.state; 
         roomCode = roomData ? roomData.roomCode: "12345";
+<<<<<<< HEAD
+=======
+
+        console.log("state " + this.state.roomState + "\ncards " + cards);
+>>>>>>> 60dee4b4c6ef74909f0d9a0e2f119c3c2619cecd
 
         if (this.state.roomState === 0) {
             ui = (<div>
@@ -185,6 +202,7 @@ class SessionRoom extends React.Component {
             </div>) 
 
         } else {
+            console.log("results" + this.state.results)
             ui = (
                 <div>
                     <h2>Winner: {this.state.results[0] ? this.state.results[0].name : ""}</h2>

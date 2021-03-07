@@ -15,8 +15,8 @@ GET | /room | N/A | get a particular user's room if it exists. If not, returns e
 POST | /room | user (string) | create a room and return the roomCode of the newly created room
 DELETE | /room | roomCode (string) | delete the specified room 
 POST | /room/join | roomCode (string), user (string) | join the specified room
-POST | /room/study | user (string) | create a room with preset study locations and return the roomCode of the newly created room
-POST | /room/food | user (string) | create a room with preset food locations and return the roomCode of the newly created room
+POST | /room/study | user (string) | create a room with preset study locations and return the roomCode and options of the newly created room
+POST | /room/food | user (string) | create a room with preset food locations and return the roomCode and options of the newly created room
 
 ### /option
 

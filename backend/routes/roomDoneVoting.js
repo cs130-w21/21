@@ -35,7 +35,9 @@ router.get('/', async function(req, res, next) {
   }
 
   res.json({
-    "done": (membersDone && ownerDone) ? 1 : 0
+    "done": (membersDone && ownerDone) ? 1 : 0,
+    "o" : ownerDone,
+    "m" : membersDone
   });
 });
 

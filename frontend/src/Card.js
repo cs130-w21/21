@@ -28,14 +28,14 @@ function Card (props) {
   }
 
   const swiped = (direction, nameToDelete) => {
-    console.log('removing: ' + nameToDelete)
+    //console.log('removing: ' + nameToDelete)
     setLastDirection(direction)
     if(direction === "right") props.right()
     else props.left()
   }
 
   const outOfFrame = (name) => {
-    console.log(name + ' left the screen!')
+    //console.log(name + ' left the screen!')
   }
 
   return (
