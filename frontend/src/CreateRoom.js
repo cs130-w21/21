@@ -31,7 +31,11 @@ function CreateRoomButton() {
         } else if (optionClicked == 1){
             try {
                 console.log("Attempting to make post request");
-                axios.post('http://localhost:3000/room/study', {user: "Owner"}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                axios.post('http://localhost:3000/room/study', 
+                    {user: "Owner"}, 
+                    {headers: {'Content-Type': 'application/json'},
+                    withCredentials: true
+                }).then(res => {
                     console.log(res);
                     console.log("Successfully finished post request")
                     history.push("/room", res.data);
@@ -43,7 +47,11 @@ function CreateRoomButton() {
         }else if (optionClicked == 2){
             try {
                 console.log("Attempting to make post request");
-                axios.post('http://localhost:3000/room/food', {user: "Owner"}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                axios.post('http://localhost:3000/room/food', 
+                {user: "Owner"}, 
+                {headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
                     console.log(res);
                     console.log("Successfully finished post request")
                     history.push("/room", res.data);
