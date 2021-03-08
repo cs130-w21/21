@@ -170,3 +170,8 @@ th, td {
   width: 99%;
   padding-right: 20px;
 }
+
+h2, h3 {
+  margin-top: 0;
+  padding-top: 0.83em;
+}

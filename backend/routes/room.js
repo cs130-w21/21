@@ -107,7 +107,6 @@ router.post('/', async function(req, res, next) {
 */
 router.delete('/', async function(req, res, next) {
   let roomCode = req.body.roomCode;
-  console.log(roomCode)
   if(!roomCode || !helper.validRoomCode(roomCode)) 
   {
     res.status(400).send("400 Bad Request: please include roomCode in request body.");

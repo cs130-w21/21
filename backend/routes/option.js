@@ -111,7 +111,6 @@ router.post("/results", async function(req, res, next) {
   }
   let db = dbConn.getDb();
   for (let [name, result] of Object.entries(results)) {
-    console.log(name + " " + result)
     if (result == "True") {
       var optionAddRes = await db.collection("Rooms").updateOne({
         "options.name": name

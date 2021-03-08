@@ -36,8 +36,7 @@ describe("Options", function() {
       // check to see if that option is present
       let cookie = cookieHelper.generateCookie(user, roomCode);
       let getRoomRes = await chai.request(app)
-        .get("/room")
-        .set("Cookie", `pickrCookie=${cookie}`);
+        .get(`/room?roomCode=${roomCode}`);
 
       expect(getRoomRes.body).to.deep.equal({
         "_id": roomCode,
