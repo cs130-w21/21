@@ -25,6 +25,7 @@ HTTP Method | Endpoint | Required Arguments (in request body) | Description
 POST | /option | roomCode (string), option (string) | insert an option for a particular room
 DELETE | /option | roomCode (string), option (string) | delete the specified option for a particular room
 POST | /option/results | roomCode (string), results (json) | pass results from card swiping to backend, updating room + option info
+POST | /option/nomination | roomCode (string) | update nomination status of current user as completed to backend 
 
 Results json should have the following format based on swipe result ("True" for yes swipe, "False" for no swipe):
     
