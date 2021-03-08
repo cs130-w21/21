@@ -45,7 +45,11 @@ describe("Options", function() {
           {"name" : "option1", "yes": 0, "no": 0}
         ],
         "members": [],
-        "owner": "someUser"
+        "owner": {
+          "doneNominating": false,
+          "doneVoting": false,
+          "id": cookie
+        }
       });
     });
   });
@@ -81,7 +85,11 @@ describe("Options", function() {
         "_id": roomCode,
         "options": [],
         "members": [],
-        "owner": "someUser"
+        "owner": {
+          "doneNominating": false,
+          "doneVoting": false,
+          "id": cookie
+        }
       });
     });
   });
@@ -126,7 +134,11 @@ describe("Options", function() {
           {"name" : "option2", "yes": 0, "no": 1}
         ],
         "members": [],
-        "owner": "someUser"
+        "owner": {
+          "doneNominating": false,
+          "doneVoting": false,
+          "id": cookie
+        }
       });
     });
   });
