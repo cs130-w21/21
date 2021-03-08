@@ -42,3 +42,15 @@ $ npm install
 # Run the frontend
 $ npm start
 ```
+
+## CI/CD: Triggering the build
+
+Pushing a commit to master and creating a new pull request will trigger the build. To trigger the build, install dependencies in the above steps and then:
+
+```bash
+# Go into the backend folder
+$ cd ../backend
+
+$ npm test
+
+
