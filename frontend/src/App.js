@@ -4,8 +4,9 @@ import {BrowserRouter as Router, Link, Route, useHistory} from "react-router-dom
 import CreateRoom from './CreateRoom.js'
 import JoinRoom from './JoinRoom.js'
 import axios from "axios";
+import background from "./img/background.png";
 
-import SessionRoom from './SessionRoom';
+import SessionRoom from './SessionRoom.js';
 
 function CreateButton() {
   let history = useHistory();
@@ -61,10 +62,15 @@ function Home() {
   );
 }
 
+const style = {
+  backgroundImage: `url(${background})`,
+  backgroundSize: 'cover',
+  height: '107vh'
+}
 function App() {
   return (
     <Router>
-      <div>
+      <div style={style}>
         <Route exact path="/" component={Home}/>
         <Route exact path="/create" component={CreateRoom}/>
         <Route exact path="/join" component={JoinRoom}/>

@@ -8,11 +8,50 @@ function CreateRoomButton() {
     let history = useHistory();
  
     function handleClick() {
-        if (optionClicked !== 0) {
-            console.log(optionClicked) //This is where we would want to POST request
+        console.log(optionClicked) //This is where we would want to POST request
+        if (optionClicked == 3) {
+
             try {
                 console.log("Attempting to make post request");
-                axios.post('http://localhost:3000/room', {user: "Owner"}, {headers: {'Content-Type': 'application/json'}}).then(res => {
+                axios.post(
+                    'http://localhost:3000/room', 
+                    {user: "Owner"}, 
+                    {
+                        headers: {'Content-Type': 'application/json'},
+                        withCredentials: true
+                    }).then(res => {
+                    console.log(res);
+                    console.log("Successfully finished post request")
+                    history.push("/room", res.data);
+                });
+            } catch (err) {
+                console.log(err);
+                console.log("Failed to create room");
+            }
+        } else if (optionClicked == 1){
+            try {
+                console.log("Attempting to make post request");
+                axios.post('http://localhost:3000/room/study', 
+                    {user: "Owner"}, 
+                    {headers: {'Content-Type': 'application/json'},
+                    withCredentials: true
+                }).then(res => {
+                    console.log(res);
+                    console.log("Successfully finished post request")
+                    history.push("/room", res.data);
+                });
+            } catch (err) {
+                console.log(err);
+                console.log("Failed to create room");
+            }
+        }else if (optionClicked == 2){
+            try {
+                console.log("Attempting to make post request");
+                axios.post('http://localhost:3000/room/food', 
+                {user: "Owner"}, 
+                {headers: {'Content-Type': 'application/json'},
+                withCredentials: true
+            }).then(res => {
                     console.log(res);
                     console.log("Successfully finished post request")
                     history.push("/room", res.data);
@@ -22,6 +61,7 @@ function CreateRoomButton() {
                 console.log("Failed to create room");
             }
         }
+        
 
     }
   

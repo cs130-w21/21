@@ -36,8 +36,7 @@ describe("Options", function() {
       // check to see if that option is present
       let cookie = cookieHelper.generateCookie(user, roomCode);
       let getRoomRes = await chai.request(app)
-        .get("/room")
-        .set("Cookie", `pickrCookie=${cookie}`);
+        .get(`/room?roomCode=${roomCode}`);
 
       expect(getRoomRes.body).to.deep.equal({
         "_id": roomCode,
@@ -45,7 +44,11 @@ describe("Options", function() {
           {"name" : "option1", "yes": 0, "no": 0}
         ],
         "members": [],
-        "owner": "someUser"
+        "owner": {
+          "doneNominating": false,
+          "doneVoting": false,
+          "id": cookie
+        }
       });
     });
   });
@@ -81,7 +84,11 @@ describe("Options", function() {
         "_id": roomCode,
         "options": [],
         "members": [],
-        "owner": "someUser"
+        "owner": {
+          "doneNominating": false,
+          "doneVoting": false,
+          "id": cookie
+        }
       });
     });
   });
@@ -126,7 +133,11 @@ describe("Options", function() {
           {"name" : "option2", "yes": 0, "no": 1}
         ],
         "members": [],
-        "owner": "someUser"
+        "owner": {
+          "doneNominating": false,
+          "doneVoting": false,
+          "id": cookie
+        }
       });
     });
   });

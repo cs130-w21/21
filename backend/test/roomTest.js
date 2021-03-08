@@ -52,7 +52,11 @@ describe("Rooms", function () {
                 "_id": roomCode,
                 "options": [],
                 "members": [],
-                "owner": "someUser"
+                "owner": {
+                  "doneNominating": false,
+                  "doneVoting": false,
+                  "id": cookie
+                }
               });
               expect(res.status).to.equal(200);
               done();
@@ -121,19 +125,28 @@ describe("Rooms", function () {
       expect(joinRoomRes.status).to.equal(200);
 
       // generate a cookie and use it to retrieve the room
-      let cookie = cookieHelper.generateCookie(member, roomCode);
+      let ownerCookie = cookieHelper.generateCookie(owner, roomCode);
+      let memberCookie = cookieHelper.generateCookie(member, roomCode);
       let getRoomRes = await chai.request(app)
         .get("/room")
-        .set("Cookie", `pickrCookie=${cookie}`);
+        .set("Cookie", `pickrCookie=${memberCookie}`);
 
       // room should have the member in it
       expect(getRoomRes.body).to.deep.equal({
         "_id": roomCode,
         "options": [],
         "members": [
-          "memberUser"
+          {
+            "doneNominating": false,
+            "doneVoting": false,
+            "id": memberCookie
+          }
         ],
-        "owner": "ownerUser"
+        "owner": {
+          "doneNominating": false,
+          "doneVoting": false,
+          "id": ownerCookie
+        }
       });
     });
   })
