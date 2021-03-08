@@ -40,7 +40,9 @@ class SessionRoom extends React.Component {
             this.state = {
                 roomState: 1, //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
                 results: [],
-                poll: true
+                vote_poll: true,
+                cardResults: [],
+                tinder_cards: []
             };
             this.handleToUpdate()
         }
