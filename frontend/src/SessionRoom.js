@@ -9,8 +9,6 @@ import ReactPolling from 'react-polling';
 
 let roomCode = "12345"
 let cards = []
-let tinder_cards = []
-let cardResults = []
 let currentIndex = 0
 let roomHeader = "Do you like this option?"
 
@@ -27,10 +25,11 @@ class SessionRoom extends React.Component {
         this.state = {
             roomState: 0, //0 = nomination, 1 = swipe, 2 = waiting to finish swiping, 3 = winner
             results: [],
-            vote_poll: true
+            vote_poll: true,
+            cardResults: [],
+            tinder_cards: []
         };
         cards = [];
-        cardResults = [];
         currentIndex = 0;
         let roomData = props.location.state;
         //console.log(roomData)
@@ -64,10 +63,10 @@ class SessionRoom extends React.Component {
       }).then(res => {
           let options = res.data.options;
           for (let option of options) {
-            tinder_cards.push(option.name);
+            this.state.tinder_cards.push(option.name);
           }
-          for(let i=tinder_cards.length-1; i > -1; i--){
-            cardResults.push({name: tinder_cards[i], result: false})
+          for(let i=this.state.tinder_cards.length-1; i > -1; i--){
+            this.state.cardResults.push({name: this.state.tinder_cards[i], result: "False"})
         }
       });
         this.forceUpdate();
@@ -77,9 +76,9 @@ class SessionRoom extends React.Component {
      */
     swipeRight(){
         console.log("swiped right")
-        cardResults[currentIndex].result = "True"
+        this.state.cardResults[currentIndex].result = "True"
         currentIndex++
-        if(currentIndex >= cardResults.length){
+        if(currentIndex >= this.state.cardResults.length){
             this.doneVoting()
         }
     }
@@ -88,9 +87,9 @@ class SessionRoom extends React.Component {
      */
     swipeLeft(){
         console.log("swiped left")
-        cardResults[currentIndex].result = "False"
+        this.state.cardResults[currentIndex].result = "False"
         currentIndex++
-        if(currentIndex >= cardResults.length){
+        if(currentIndex >= this.state.cardResults.length){
             this.doneVoting()
         }
     }
@@ -102,8 +101,8 @@ class SessionRoom extends React.Component {
         this.setState({roomState: 2});
         //adding code here to retrieve results and display winner
         let dict = {}
-        for(let i = 0; i<cardResults.length; i++){
-            dict[cardResults[i].name] = cardResults[i].result
+        for(let i = 0; i<this.state.cardResults.length; i++){
+            dict[this.state.cardResults[i].name] = this.state.cardResults[i].result
         }
         console.log(dict)
         try { //get options here if its not a cutsom room
@@ -181,6 +180,10 @@ class SessionRoom extends React.Component {
             console.log("room deleted")
         });
 
+        this.setState({ 
+            cardResults: [],
+            tinder_cards: [] 
+        });
         this.props.history.push('/');
     }
     /**
@@ -191,7 +194,7 @@ class SessionRoom extends React.Component {
         let roomData = this.props.location.state; 
         roomCode = roomData ? roomData.roomCode: "12345";
 
-        console.log("state " + this.state.roomState + "\ncards " + tinder_cards);
+        console.log("state " + this.state.roomState + "\ncards " + this.state.tinder_cards);
 
         if (this.state.roomState === 0) {
             ui = (<div>
@@ -203,7 +206,7 @@ class SessionRoom extends React.Component {
         } else if (this.state.roomState === 1){
 
             ui = (<div>
-                <Card cardsList={tinder_cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
+                <Card cardsList={this.state.tinder_cards} roomHeader={roomHeader} right={this.swipeRight.bind(this)} left={this.swipeLeft.bind(this)}/>
                 <h2 className="RoomCode">
                     Room Code: {roomCode}
                 </h2>
